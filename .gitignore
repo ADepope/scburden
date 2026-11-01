@@ -1,0 +1,9 @@
+# data (OneK1K-derived tensors, UK Biobank-derived summary statistics, half ID lists) and job logs
+data/
+logs/
+results/real/
+*.npz
+
+__pycache__/
+*.pyc
+.pytest_cache/
