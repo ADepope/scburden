@@ -45,7 +45,7 @@ and `s3_rerun/metrics.tsv` (S3, rerun with the corrected η rule, see SPEC "Devi
 | coupled | 0.81 | 0.82 |
 | two-step | 0.65 | 0.73 |
 
-**S3 null** (Θ = 0, nuisance present). Held-out gain against predicting 0, × 1e4 (expected ≤ 0):
+**S3 null** ($\Theta = 0$, nuisance present). Held-out gain against predicting 0, × 1e4 (expected ≤ 0):
 
 | Method | Gain |
 |---|---|
