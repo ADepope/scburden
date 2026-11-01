@@ -1,0 +1,13 @@
+S3_null rep 0: 283s
+S3_null rep 1: 233s
+S3_null rep 2: 234s
+S3_null rep 3: 234s
+S3_null rep 4: 233s
+                        rep  eta   R2_B  gainx1e4_B  r2_true   R2_A  gain_A  prog_cos  celltype_cor
+scenario method                                                                                    
+S3_null  coupled_joint  2.0  1.0  0.345      -0.291      NaN  0.426    -0.0     0.596         0.799
+         coupled_refit  2.0  5.4  0.027      -0.081      NaN  0.091    -0.0     0.532         0.773
+         null           2.0  NaN  0.000       0.000      NaN  0.000     0.0       NaN           NaN
+         random         2.0  NaN  0.053      -0.138      NaN  0.033    -0.0       NaN           NaN
+         scitd          2.0  NaN  0.150      -0.181      NaN  0.090    -0.0     0.291           NaN
+         two_step       2.0  NaN  0.147      -0.128      NaN  0.166    -0.0     0.600         0.800
