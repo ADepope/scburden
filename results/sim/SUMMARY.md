@@ -17,7 +17,7 @@ about 4 min per replicate.
 How the numbers were computed:
 - All predictions are for **held-out genes** (3 gene folds) and are scored on the **independent
   half B**.
-- $R^2_B$ is noise-corrected.
+- $`R^2_B`$ is noise-corrected.
 - η and the ridge penalties were chosen on half A only.
 
 Full tables (mean ± SE over replicates): [tables.md](tables.md). Raw data: `metrics.tsv` (S1, S2)
@@ -27,13 +27,13 @@ and `s3_rerun/metrics.tsv` (S3, rerun with the corrected η rule, see SPEC "Devi
 
 | | S1 main (nuisance programs) | S2 aligned (no nuisance) |
 |---|---|---|
-| **Held-out $R^2_B$** | | |
+| **Held-out $`R^2_B`$** | | |
 | coupled, refit route | **0.388 ± 0.150** | **0.551 ± 0.112** |
 | coupled, joint route | 0.296 ± 0.136 | 0.471 ± 0.103 |
 | two-step (same model, expression only, then ridge) | 0.278 ± 0.146 | 0.465 ± 0.100 |
 | scITD-style + ridge | 0.131 ± 0.090 | 0.180 ± 0.080 |
 | random gene sets + ridge | −0.016 | −0.013 |
-| **Paired gain, refit − two-step, $R^2_B$** | **+0.110 ± 0.048** (5/5 replicates) | +0.086 ± 0.068 (4/5) |
+| **Paired gain, refit − two-step, $`R^2_B`$** | **+0.110 ± 0.048** (5/5 replicates) | +0.086 ± 0.068 (4/5) |
 | **Program recovery** (matched cosine) | | |
 | coupled | 0.63 | 0.62 (joint fit: 0.70) |
 | two-step | 0.42 | 0.50 |
@@ -45,7 +45,7 @@ and `s3_rerun/metrics.tsv` (S3, rerun with the corrected η rule, see SPEC "Devi
 | coupled | 0.81 | 0.82 |
 | two-step | 0.65 | 0.73 |
 
-**S3 null** ($\Theta = 0$, nuisance present). Held-out gain against predicting 0, × 1e4 (expected ≤ 0):
+**S3 null** ($`\Theta = 0`$, nuisance present). Held-out gain against predicting 0, × 1e4 (expected ≤ 0):
 
 | Method | Gain |
 |---|---|
@@ -54,7 +54,7 @@ and `s3_rerun/metrics.tsv` (S3, rerun with the corrected η rule, see SPEC "Devi
 | scITD-style | −0.18 |
 | random gene sets | −0.14 |
 
-So coupling creates no spurious predictive signal. $R^2_B$ is not meaningful in S3 because its
+So coupling creates no spurious predictive signal. $`R^2_B`$ is not meaningful in S3 because its
 denominator is about 0.
 
 ## Reading
@@ -63,15 +63,15 @@ denominator is about 0.
   hidden behind stronger nuisance programs (S1). There, the burden statistics steer the
   factorization toward them:
   - program recovery goes from 0.42 to 0.63;
-  - held-out $R^2$ goes from 0.28 to 0.39.
+  - held-out $`R^2`$ goes from 0.28 to 0.39.
 
   When the trait programs dominate expression anyway (S2), the gain is smaller and less consistent.
 - **The scITD-style baseline is weak here.** Its cell-type × gene loadings are 6·K features per
   gene, fitted without noise weights. On sparse, noisy burden data that loses to a non-negative,
   noise-aware CP.
 - **For prediction, use the refit route.** In the joint fit, the training genes' loadings are also
-  fitted to their own noisy $\hat\beta$, which held-out genes do not get. This overstates $\Theta$ for new genes,
-  and the problem is severe at η ≥ 10 (pilot runs, and the first S3 run). The joint $\Theta$ is still the
+  fitted to their own noisy $`\hat\beta`$, which held-out genes do not get. This overstates $`\Theta`$ for new genes,
+  and the problem is severe at η ≥ 10 (pilot runs, and the first S3 run). The joint $`\Theta`$ is still the
   better estimate of program–trait links (AUROC 0.92).
 - **η selection:** CV picked η ≈ 9 (S1) and 5 (S2) for refit, and 3 for joint.
 
