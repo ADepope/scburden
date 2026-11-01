@@ -38,8 +38,12 @@ if [ ! -s $OUT/half1.id ]; then
 fi
 echo "half 1: $(($(wc -l < $OUT/half1.id) - 1)) samples (header excluded)"
 
-# 2. marginal burden regressions per trait and half
-awk -F'\t' '$2 == "2M" {print $1"\t"$4}' $RUNS | while IFS=$'\t' read -r TRAIT PHEN; do
+# 2. marginal burden regressions per trait and half. Phenotypes: 2M rows of the gVAMP-EC runs.tsv,
+# plus traits only listed in rare_lof_AB's own runs.tsv (HT; same file as its full-sample marginal)
+{ awk -F'\t' '$2 == "2M" {print $1"\t"$4}' $RUNS
+  awk -F'\t' 'NR == FNR {if ($2 == "2M") seen[$1] = 1; next} $2 == "lof" && !($1 in seen) {print $1"\t"$4}' \
+      $RUNS $A/scripts/runs.tsv
+} | while IFS=$'\t' read -r TRAIT PHEN; do
     [[ $BINARY == *" $TRAIT "* ]] && continue
     for H in 1 2; do
         O=$OUT/half$H
