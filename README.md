@@ -22,34 +22,59 @@ association statistics in this way. Related work is reviewed in [NOVELTY.md](NOV
 
 ## The model
 
-The expression data form a tensor X[donor, cell type, gene]. Each entry is the pseudobulk
-expression share of a gene in one donor's cells of one type. The model is a CP decomposition:
+The expression data form a tensor $X_{dcg}$ over donors $d$, cell types $c$ and genes $g$. Each
+entry is the pseudobulk expression share of a gene in one donor's cells of one type, relative to
+its batch mean. The model is a CP decomposition with $K$ programs:
 
-    X[d, c, g] ≈ Σ_k U[d, k] · A[c, k] · W[g, k]
+```math
+X_{dcg} = \sum_{k=1}^{K} U_{dk}\, A_{ck}\, W_{gk} + \varepsilon_{dcg},
+\qquad \varepsilon_{dcg} \sim \mathcal{N}\!\left(0,\; v_{dcg} + s^2_{cg}\right)
+```
 
 | Symbol | Meaning |
 |---|---|
-| U[d, k] | Donor scores |
-| A[c, k] | How strongly program k is used in each cell type |
-| W[g, k] ≥ 0 | Gene loadings, shared with the burden block |
+| $U_{dk}$ | Donor scores |
+| $A_{ck}$ | How strongly program $k$ is used in cell type $c$ |
+| $W_{gk} \ge 0$ | Gene loadings, shared with the burden block |
+| $v_{dcg}$ | Known sampling variance of the pseudobulk value |
+| $s^2_{cg}$ | Learned residual variance between donors |
 
-The burden effects β̂[gene, trait] are modelled with the same gene loadings:
+The burden effects $\hat\beta_{gt}$ of gene $g$ on trait $t$ are modelled with the same gene
+loadings:
 
-    β̂[g, t] ≈ Σ_k W[g, k] · Θ[k, t]
+```math
+\hat{\boldsymbol\beta}_{g} = \boldsymbol\Theta^{\top} \mathbf{w}_{g} + \mathbf{e}_{g},
+\qquad \mathbf{e}_{g} \sim \mathcal{N}\!\left(\mathbf{0},\; S_g R\, S_g + \operatorname{diag}(\boldsymbol\psi)\right)
+```
 
-Θ holds each program's effect on each trait.
+| Symbol | Meaning |
+|---|---|
+| $\hat{\boldsymbol\beta}_{g}$ | The gene's burden effects across all traits |
+| $\mathbf{w}_{g}$ | Its row of $W$ |
+| $\Theta_{kt}$ | Effect of program $k$ on trait $t$ |
+| $S_g$ | Diagonal matrix of the burden standard errors |
+| $R$ | Cross-trait error correlation |
+| $\psi_t$ | Variance of gene effects outside the programs |
+
+The two blocks are fitted together by maximizing
+
+```math
+\log p(X \mid U, A, W) \;+\; \eta \,\log p(\hat\beta \mid W, \Theta) \;+\; \log p(U, A, W, \Theta)
+```
+
+where $\eta$ is the coupling weight.
 
 What makes the model "noise-aware":
 - **Expression noise is known, not fitted.** Each expression entry comes with its sampling
-  variance, computed from the cells behind it. Donors with few cells and lowly expressed genes
-  therefore count for less.
-- **Burden errors are modelled as they are.** Each burden effect comes with its standard error. A
-  cross-trait error correlation, estimated from null genes, accounts for the fact that all traits
-  are measured on largely the same people.
+  variance $v_{dcg}$, computed from the cells behind it. Donors with few cells and lowly expressed
+  genes therefore count for less.
+- **Burden errors are modelled as they are.** Each burden effect comes with its standard error. The
+  error correlation $R$, estimated from null genes, accounts for the fact that all traits are
+  measured on largely the same people.
 - **The number of programs is learned.** Automatic relevance determination priors prune programs
   that are not needed.
-- **The coupling weight is cross-validated.** It sets how much the burden statistics may shape the
-  programs, and is chosen on held-out genes.
+- **The coupling weight $\eta$ is cross-validated.** It sets how much the burden statistics may
+  shape the programs, and is chosen on held-out genes.
 
 The model is fitted by MAP estimation in PyTorch, on CPU or GPU.
 
@@ -62,7 +87,7 @@ model, baselines and metrics were fixed in advance in [SPEC.md](SPEC.md).
 **Simulation: done.** I planted trait-relevant programs that are weak in expression, next to
 stronger "nuisance" programs with no trait effect. Coupling then improves the held-out burden
 prediction over the same model fitted to expression only:
-- noise-corrected R²: 0.39 vs 0.28 (5 of 5 replicates);
+- noise-corrected $R^2$: 0.39 vs 0.28 (5 of 5 replicates);
 - recovery of the true programs: cosine 0.63 vs 0.42.
 
 A scITD-style decomposition reaches 0.13, and random gene sets reach nothing. With no true effects,
