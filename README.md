@@ -44,7 +44,7 @@ loadings:
 
 ```math
 \hat{\boldsymbol\beta}_{g} = \boldsymbol\Theta^{\top} \mathbf{w}_{g} + \mathbf{e}_{g},
-\qquad \mathbf{e}_{g} \sim \mathcal{N}\!\left(\mathbf{0},\; S_g R\, S_g + \operatorname{diag}(\boldsymbol\psi)\right)
+\qquad \mathbf{e}_{g} \sim \mathcal{N}\!\left(\mathbf{0},\; S_g R\, S_g + \mathrm{diag}(\boldsymbol\psi)\right)
 ```
 
 | Symbol | Meaning |
