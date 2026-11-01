@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH --job-name sctb_fit
 #SBATCH --partition gpu
-#SBATCH --gres gpu:A100:1
+#SBATCH --gres gpu:1
 #SBATCH --nodes 1
 #SBATCH --ntasks 1
 #SBATCH --cpus-per-task 8
@@ -11,6 +11,7 @@
 #
 # Real-data fit of the coupled model and baselines (scripts/fit_real.py), after
 # scripts/burden_splithalf.sh and scripts/prepare_real.py. Summary statistics and OneK1K moments only.
+# Any GPU: the tensor (981 x 16 x 6,444, float32) needs a few GB of GPU memory, well under 11 GB.
 set -euo pipefail
 P=/nfs/scistore24/robingrp/adepope/sc_tensor_burden
 PY=/nfs/scistore24/robingrp/adepope/sc_dosage_J/envs/scdosage/bin/python
