@@ -68,3 +68,22 @@ separate cohort.
 - Ota et al. (2025) will be the reviewers' first comparison. The pitch has to be about natural
   donor-to-donor co-variation across many cell types in a population atlas, learned jointly with
   the burden statistics, as opposed to perturbation programs in one cell line linked afterwards.
+
+## Addendum (2026-11-02): version 2 with GWAS gene scores
+
+A re-check for SPEC_v2 searched for single-cell gene programs fitted jointly with gene-level GWAS
+statistics (shared loadings, supervised or GWAS-guided factor analysis). It found nothing closer
+than the work listed above. What turned up was either two-step or something else entirely:
+- sc-linker, scPagwas, scDRS and the trait–cell type benchmark of
+  [medRxiv 2025.05.24.25328275](https://www.medrxiv.org/content/10.1101/2025.05.24.25328275v2.full)
+  all fix the programs or cell types first and test them against GWAS afterwards.
+- The OneK1K cell-type-specific eQTL heritability study
+  ([Nature 2026](https://www.nature.com/articles/s41586-026-10577-6)) works through eQTLs, not
+  programs.
+- GLEANR ([AJHG 2025](https://www.cell.com/ajhg/fulltext/S0002-9297(25)00273-3)) factorizes
+  summary statistics alone.
+
+**The main new risk is PoPS.** Version 2 evaluates the model by predicting gene-level MAGMA scores
+on held-out chromosomes, which is PoPS's own design. The new part is narrower than in version 1:
+the expression features are multicellular programs learned jointly with the GWAS signal. Key
+baselines: PoPS-style ridge on fixed programs (B2) and on cell-type specificity (B5).
