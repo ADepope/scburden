@@ -96,9 +96,49 @@ coupling creates no spurious signal. Details are in
 structure as the model, so they show that the method works as intended, not that it will work on
 real data.
 
-**Real data: next.** The atlas is OneK1K: about 1,000 donors and 16 immune cell types, giving a
-tensor of 981 × 16 × 6,444 genes after filters. The burden statistics are for 18 quantitative
-traits in UK Biobank. The pipeline is written but has not been run yet.
+**Real data, version 1 (LoF burden): null result.** The atlas is OneK1K: about 1,000 donors and
+16 immune cell types, giving a tensor of 981 × 16 × 6,444 genes after filters. The burden
+statistics are for 18 quantitative traits in UK Biobank, computed in two independent halves of the
+cohort.
+
+The pre-registered test failed. All numbers are pooled, noise-corrected held-out $`R^2`$ on half B:
+
+| Method | $`R^2_B`$ |
+|---|---|
+| coupled, refit route (η = 100) | −0.017 |
+| coupled, joint route (η = 3) | −0.201 |
+| two-step | −0.018 |
+| scITD-style | −0.005 |
+| random gene sets | −0.003 |
+| predicting 0 | 0 |
+
+- **Gain of refit over two-step:** +0.002, with a 95% bootstrap CI of −0.030 to +0.043. The
+  pre-registered criterion required the CI to exclude 0.
+- **Every method is at or below predicting 0.** So the problem is not coupling versus no coupling;
+  nothing derived from expression predicted the burden effects of held-out genes.
+- **Joint route:** in the joint fit, the training genes' loadings are also fitted to their own
+  noisy burden effects. It overfits, and more so as η grows.
+- **Programs replicate in expression but not in burden.** The programs fitted separately on
+  halves A and B match closely in their gene loadings (matched cosine 0.78–1.00). Their trait
+  effects $`\Theta`$ do not agree (correlation −0.57 to +0.54, centred near 0).
+
+Post-hoc diagnostics (`scripts/diagnose_real.py`, not pre-registered) explain why:
+- **There is little shared signal to predict.** Even a gene's own half-A burden estimate predicts
+  only 4.3% of its half-B variance (pooled ceiling $`R^2`$; 18% for height, under 1% for most
+  blood counts).
+- **Where there is signal, a few genes carry it.** For LYMPH, MCV and MCH, the top 10 genes carry
+  46–56% of the shared signal.
+- **No linear map from the programs does better.** A ridge regression fitted on all genes at once,
+  with no held-out genes, reaches only $`R^2_B`$ = 0.004 from the expression-only loadings.
+
+**Real data, version 2 (GWAS gene scores): running.** Rare LoF burden is too sparse for this test.
+Version 2 replaces it with MAGMA gene z-scores from public GWAS of 17 European traits:
+- 14 immune traits: blood cell counts and immune diseases;
+- 3 controls: height, LDL and MCV.
+
+The test is replication in Biobank Japan (12 traits) on held-out chromosomes. The plan, baselines
+and success criteria were fixed before the fit in [SPEC_v2.md](SPEC_v2.md). The gene scores are
+built (6,320 genes), and the GPU fit is queued.
 
 ## Repository layout
 
