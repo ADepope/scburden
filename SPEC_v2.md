@@ -195,3 +195,30 @@ Done on 2026-11-02, with approval. Everything is in `data/gwas/`, which is not i
 Each MAGMA run (per trait) takes minutes on a CPU, so the whole set fits in one SLURM array job of
 ~30 tasks. The model fits need the same GPU job as version 1: about 3 h per η grid on an A10, so
 expect ~4–6 h with replication. Every job is submitted only after explicit approval.
+
+## Deviations
+
+2026-11-04, after the MAGMA gene scores were computed and before any model fit:
+- **Gene z-scores are capped at 6.1094** ($`p = 5\times10^{-10}`$), for every trait and both
+  cohorts. When MAGMA's numerical integration fails, it falls back to simulation and reports
+  $`p = 5\times10^{-10}`$ if no simulated statistic beats the observed one (MAGMA v1.10 manual,
+  SNP-wise mean model). Those genes have $`z \ge 6.11`$ with no upper bound, while genes where
+  integration worked reach $`z = 14.9`$, so scores above 6.11 are not comparable. Floored genes:
+  1,544 of 18,018 for European height, 79–490 for the other well-powered European traits, 1–128
+  in Biobank Japan. After the cap, 4,225 discovery and 368 replication gene–trait pairs (of the
+  6,320 analysed genes) sit at the cap.
+- **Note on §1.** The European asthma file does have rsIDs for some SNPs; the others are
+  `chr:pos_alleles`. As specified, all its SNPs are matched to the reference panel by position and
+  alleles, so the method is unchanged; only the description in §1 was inaccurate.
+
+Implementation details that the spec left open (not deviations):
+- Gene matching: tensor symbol → Ensembl ID from the OneK1K gene table → Entrez ID from HGNC. Of
+  the 6,444 tensor genes, 6,434 are in NCBI37.3, 24 of these have no MAGMA score (no SNPs in the
+  reference panel) and 90 overlap the MHC, leaving 6,320 genes.
+- Chromosome folds: greedy assignment by gene count, largest chromosome first. Groups:
+  {1, 5, 14, 18}, {6, 15, 16, 19}, {2, 7, 9, 21, 22}, {4, 8, 11, 12}, {3, 10, 13, 17, 20}, with
+  1,228–1,302 genes each.
+- $`R`$ (discovery) rests on only 220 genes with $`\max_t z < 2`$ across all 17 traits, because the
+  tensor genes are expressed in immune cells and the European studies are large. Its largest entry
+  is neutrophil count with white-cell count (0.76); the median $`|r|`$ is 0.06. $`R`$ (Biobank Japan)
+  uses 2,066 genes.
