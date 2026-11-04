@@ -8,12 +8,15 @@ Scores: MAGMA ZSTAT, capped at z = 6.1094 (p = 5e-10, MAGMA's floor for simulate
 SPEC_v2 Deviations). Covariates per gene and trait: log gene length, log NSNPS, log NPARAM; they are
 regressed out later, inside each fold. R: correlation of the capped z over genes with max_t z < 2,
 per cohort. Folds: 5 chromosome groups, greedy by gene count (largest chromosome first).
+ct_mean: mean pseudobulk share of each gene in each tensor cell type (for baseline B5).
 Writes data/real/gwas_v2.npz:
   Z, COV (genes x 17 discovery traits [x 3]), Z_rep, COV_rep (genes x 12 Biobank Japan traits [x 3]),
   R, R_rep, traits, traits_rep, rep_idx (column of each replication trait in Z), immune (per
-  discovery trait), genes, entrez, chrom, start, stop, tensor_idx (column in tensor.npz), fold.
+  discovery trait), genes, entrez, chrom, start, stop, tensor_idx (column in tensor.npz), fold,
+  ct_mean (genes x cell types).
 Public summary statistics only. Run: python -I scripts/prepare_v2.py
 """
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -21,9 +24,13 @@ import pandas as pd
 from scipy.stats import norm
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+from sctb import data  # noqa: E402
+
 BASE = ROOT.parent
 G = ROOT / "data/gwas"
-ONEK1K_GENES = BASE / "sc_dosage_J/results/moments/onek1k/genes.tsv"
+MOMENTS = BASE / "sc_dosage_J/results/moments/onek1k"
+ONEK1K_GENES = MOMENTS / "genes.tsv"
 HGNC = BASE / "sc_dosage_J/data/raw/reference/hgnc_complete_set.txt"
 ZCAP = norm.isf(5e-10)
 CONTROLS = {"HEIGHT", "LDL", "MCV"}
@@ -87,7 +94,7 @@ def main():
              traits=np.array(disc), traits_rep=np.array(rep), rep_idx=np.array([disc.index(r) for r in rep]),
              immune=np.array([tr not in CONTROLS for tr in disc]), genes=sym.values[ti],
              entrez=idx.values.astype(int), chrom=chrom, start=L.start.values, stop=L.stop.values,
-             tensor_idx=ti, fold=fold)
+             tensor_idx=ti, fold=fold, ct_mean=data.celltype_means(MOMENTS, t["cell_types"], sym.values[ti]))
 
     print(f"genes kept {len(ti)}; discovery missing {np.isnan(Z).mean():.2%}, replication missing "
           f"{np.isnan(Zr).mean():.2%}; capped at {ZCAP:.4f}: {(Z >= ZCAP - 1e-6).sum()} discovery, "

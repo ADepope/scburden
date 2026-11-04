@@ -24,13 +24,14 @@ def gene_folds(G, n_folds, seed=0):
 
 
 def coupled_cv(X, V, B, SE, R, folds, eta, K=10, n_steps=2000, refit_steps=1000, seed=0, device="cpu"):
-    """Held-out predictions (joint, refit) for one eta; also returns the per-fold fits."""
-    G, T = B.shape
+    """Held-out predictions (joint, refit) for one eta; also returns the per-fold fits.
+    B may be one G × T matrix or a dict {fold: G × T} (e.g. covariates regressed out per fold)."""
+    G, T = next(iter(B.values())).shape if isinstance(B, dict) else B.shape
     pred_joint = np.full((G, T), np.nan)
     feats, fits = {}, {}
     for f in np.unique(folds):
         tr = folds != f
-        fit = model.fit(X, V, B, SE, R, K=K, eta=eta, burden_genes=tr, n_steps=n_steps,
+        fit = model.fit(X, V, B[f] if isinstance(B, dict) else B, SE, R, K=K, eta=eta, burden_genes=tr, n_steps=n_steps,
                         seed=seed, device=device)
         pred_joint[~tr] = model.predict_burden(fit)[~tr]
         re = model.fit(X, V, None, K=K, n_steps=refit_steps, seed=seed, device=device,

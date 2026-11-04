@@ -144,3 +144,18 @@ def loeuf(path):
     g = pd.read_csv(path, sep="\t", usecols=["gene", "mane_select", "lof.oe_ci.upper"])
     g = g[g.mane_select.astype(str).str.lower() == "true"].drop_duplicates("gene")
     return g.set_index("gene")["lof.oe_ci.upper"]
+
+
+def celltype_means(moments_dir, cell_types, genes):
+    """Mean pseudobulk share (over donors with ≥ MIN_CELLS cells) of each gene in each cell type,
+    G × C, for the cell types and genes of a tensor from build_tensor (first occurrence of a symbol)."""
+    md = Path(moments_dir)
+    man = pd.read_csv(md / "manifest.tsv", sep="\t").set_index("cell_type")
+    names = pd.Series(pd.read_csv(md / "genes.tsv", sep="\t")["gene_name"].astype(str).values)
+    first = names[~names.duplicated()]
+    gidx = pd.Series(first.index, index=first.values).reindex(genes).values
+    M = np.zeros((len(genes), len(cell_types)))
+    for c, ct in enumerate(cell_types):
+        z = np.load(md / man.loc[ct, "file"], allow_pickle=True)
+        M[:, c] = z["p"][z["n_cells"] >= MIN_CELLS][:, gidx].mean(0)
+    return M

@@ -222,3 +222,8 @@ Implementation details that the spec left open (not deviations):
   tensor genes are expressed in immune cells and the European studies are large. Its largest entry
   is neutrophil count with white-cell count (0.76); the median $`|r|`$ is 0.06. $`R`$ (Biobank Japan)
   uses 2,066 genes.
+- Primary target: the Biobank Japan z with its own covariates regressed out by the same fold rule
+  as the discovery scores (training chromosomes only). B0 (covariates only) can't predict that
+  target by construction, so B0 is scored against raw Biobank Japan z; every method is also
+  reported against raw z, as a secondary check. The replication fit on Biobank Japan uses the joint
+  $`\eta`$ chosen on the discovery scores.

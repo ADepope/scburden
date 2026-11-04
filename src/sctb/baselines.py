@@ -99,12 +99,15 @@ def ridge_nested(F, B, SE, folds, inner=3, seed=0):
     """Held-out predictions with no leakage: for each outer fold, the ridge penalty is chosen by an
     inner cross-validation over the training genes only, then the model is refitted on all training
     genes and applied to the held-out genes. F may be one G × p matrix (the same features in every
-    fold) or a dict {fold: G × p} (features recomputed per fold, as for the coupled model)."""
+    fold) or a dict {fold: G × p} (features recomputed per fold, as for the coupled model); B may
+    likewise be a dict {fold: G × T}."""
     rng = np.random.default_rng(seed)
-    G, T = B.shape
+    Bd = B
+    G, T = next(iter(Bd.values())).shape if isinstance(Bd, dict) else Bd.shape
     pred = np.full((G, T), np.nan)
     for f in np.unique(folds):
         Ff = F[f] if isinstance(F, dict) else F
+        B = Bd[f] if isinstance(Bd, dict) else Bd
         tr, te = folds != f, folds == f
         mu, sd = Ff[tr].mean(0), Ff[tr].std(0)
         Fs = (Ff - mu) / np.where(sd > 0, sd, 1)

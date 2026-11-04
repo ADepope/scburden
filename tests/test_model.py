@@ -101,3 +101,25 @@ if __name__ == "__main__":
         if name.startswith("test_"):
             fn()
             print("ok", name)
+
+
+def test_gwas_helpers():
+    from sctb import gwas
+    rng = np.random.default_rng(0)
+    G, T = 400, 3
+    COV = rng.normal(size=(G, T, 2))
+    Z = 2 + COV @ np.array([1.0, -0.5]) + rng.normal(size=(G, T))
+    folds = np.arange(G) % 4
+    Zf = gwas.residualise(Z, COV, folds)
+    tr = folds != 0
+    # residuals are orthogonal to the design on the training genes of their fold
+    D = np.concatenate([np.ones((G, 1)), COV[:, 0]], 1)
+    assert np.allclose(D[tr].T @ Zf[0][tr, 0], 0, atol=1e-3)
+    oof = gwas.out_of_fold(Zf, folds)
+    assert np.allclose(oof[folds == 2], Zf[2][folds == 2])
+    P, Y = rng.normal(size=(G, T)), rng.normal(size=(G, T))
+    Y[5, 1] = np.nan
+    r = gwas.corr_by_trait(P, Y)
+    ok = ~np.isnan(Y[:, 1])
+    assert np.isclose(r[1], np.corrcoef(P[ok, 1], Y[ok, 1])[0, 1])
+    assert gwas.gene_blocks(np.array(["1", "1", "2"]), np.array([1e6, 6e6, 1e6])).tolist() == [0, 1, 2]
