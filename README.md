@@ -131,14 +131,38 @@ Post-hoc diagnostics (`scripts/diagnose_real.py`, not pre-registered) explain wh
 - **No linear map from the programs does better.** A ridge regression fitted on all genes at once,
   with no held-out genes, reaches only $`R^2_B`$ = 0.004 from the expression-only loadings.
 
-**Real data, version 2 (GWAS gene scores): running.** Rare LoF burden is too sparse for this test.
-Version 2 replaces it with MAGMA gene z-scores from public GWAS of 17 European traits:
+**Real data, version 2 (GWAS gene scores): null result.** Rare LoF burden is too sparse for this
+test. Version 2 replaces it with MAGMA gene z-scores from public GWAS of 17 European traits:
 - 14 immune traits: blood cell counts and immune diseases;
 - 3 controls: height, LDL and MCV.
 
-The test is replication in Biobank Japan (12 traits) on held-out chromosomes. The plan, baselines
-and success criteria were fixed before the fit in [SPEC_v2.md](SPEC_v2.md). The gene scores are
-built (6,320 genes), and the GPU fit is queued.
+The test is the correlation of held-out-chromosome predictions with Biobank Japan gene z-scores
+(12 traits, 6,320 genes). The plan, baselines and success criteria were fixed before the fit in
+[SPEC_v2.md](SPEC_v2.md).
+
+| Method | Mean correlation |
+|---|---|
+| coupled, refit route | 0.001 |
+| coupled, joint route | 0.004 |
+| two-step | 0.003 |
+| scITD-style | 0.018 |
+| cell-type specificity | 0.012 |
+| random gene sets | 0.000 |
+| gene length and SNP count only (against raw z) | 0.027 |
+
+None of the three pre-registered criteria is met:
+- **Refit vs two-step:** −0.002 (95% CI −0.007 to 0.003).
+- **Refit vs cell-type specificity:** −0.011 (−0.021 to −0.000); the simpler baseline is better.
+- **Immune vs control traits:** the gain over two-step is negative in both groups, so it can't be
+  specific to immune traits.
+
+Cross-validation also picked the weakest coupling weight (η = 1). Details are in the Results
+section of [SPEC_v2.md](SPEC_v2.md), and the tables in [results/v2/](results/v2/).
+
+**Conclusion.** Both pre-registered tests are null, and they agree. In OneK1K, how a gene's
+expression varies between donors and cell types carries almost no information about its trait
+association, whether measured by rare-variant burden or by GWAS. So coupling has nothing to
+amplify. The model works as intended in simulation, but these data don't support the premise.
 
 ## Repository layout
 

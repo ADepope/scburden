@@ -227,3 +227,55 @@ Implementation details that the spec left open (not deviations):
   target by construction, so B0 is scored against raw Biobank Japan z; every method is also
   reported against raw z, as a secondary check. The replication fit on Biobank Japan uses the joint
   $`\eta`$ chosen on the discovery scores.
+
+## Results (2026-11-05)
+
+One GPU job (`scripts/fit_v2.sh`, 59 min on one GPU), with the settings as specified: K = 20,
+η grid 1–100, 1,000 block-bootstrap draws, 20 random gene-set draws. Tables are in `results/v2/`
+(the `.npz` files are not in git). B6 (PoPS) was not run.
+
+**Selection.** Held-out gain on the European scores was highest at the smallest η for both routes
+(η = 1). It falls as η grows, steeply for the joint route (gain −0.006 at η = 1, −13 at η = 100).
+
+**Primary score.** Pearson correlation of the out-of-fold predictions with residualised Biobank
+Japan z, mean over the 12 traits:
+
+| Method | All 12 | 9 immune | 3 controls | Raw BBJ z, all 12 |
+|---|---|---|---|---|
+| Coupled, refit | 0.001 | 0.003 | −0.004 | 0.002 |
+| Coupled, joint | 0.004 | 0.002 | 0.010 | 0.005 |
+| B0 covariates only | — | — | — | 0.027 |
+| B1 scITD-style | 0.018 | 0.017 | 0.021 | 0.019 |
+| B2 two-step | 0.003 | 0.004 | −0.001 | 0.004 |
+| B3 random gene sets | 0.000 | 0.001 | −0.002 | 0.000 |
+| B5 cell-type specificity | 0.012 | 0.008 | 0.025 | 0.013 |
+
+No method reaches 0.06 for any single trait. The largest values are B5 for height (0.055) and
+B1 for white-cell count (0.046).
+
+**Success criteria** (coupled refit; differences in mean correlation, 95% block-bootstrap CI):
+
+| Criterion | Difference | Met? |
+|---|---|---|
+| 1. Refit − B2 > 0 | −0.002 (−0.007 to 0.003) | No |
+| 2. Refit − B5 > 0 | −0.011 (−0.021 to −0.000) | No; B5 is better |
+| 3. Gain over B2, immune − controls > 0 | +0.001 (−0.008 to 0.013) | Only nominally: the gain is negative in both groups (immune −0.001, controls −0.003), so there is no gain to be specific |
+
+**Conclusion: version 2 is a null result.** Coupling to GWAS gene scores did not improve
+held-out prediction of Biobank Japan gene scores over the same model fitted to expression only.
+Neither coupled route beat the cell-type specificity baseline either. More basically, nothing
+derived from donor-level expression variation in OneK1K predicts these gene scores better than
+gene length and SNP count do (B0, 0.027 against raw z).
+
+**Secondary.**
+- Within-European held-out noise-corrected R² (with SE = 1): −0.0006 for refit and −0.0036 for
+  joint (pooled over 17 traits), so at or below predicting 0.
+- Program–trait replication is uninformative. The discovery and Biobank Japan fits match with
+  W cosine 0.99–1.00, but both start from the same random seed. At η = 1, W is also shaped almost
+  entirely by the shared expression tensor, so this agreement is built in. Θ correlates between
+  the two fits for most programs (median 0.37; range −0.76 to 0.80). These are in-sample fits of
+  correlated gene scores on the same genes, and the held-out predictions don't transfer, so this
+  is not evidence of replicated program–trait links.
+- No programs qualify for highlighting.
+- The fit logs a harmless warning about cell type × gene entries with at most one observed donor;
+  their starting residual variance falls back to a default.
